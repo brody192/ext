@@ -2,7 +2,6 @@ package extmiddleware
 
 import (
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -17,6 +16,7 @@ func CorsAny(next http.Handler) http.Handler {
 }
 
 // disallow a fragment specified in list from appearing in path
+//
 // returns with the status code specified by code
 func DisallowInPath(list []string, code int) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -32,15 +32,6 @@ func DisallowInPath(list []string, code int) func(http.Handler) http.Handler {
 	}
 }
 
-// use environment variable PORT or specified port
-// returned value is prefixed with `:`
-func EnvPortOr(port string) string {
-	if envPort, envExists := os.LookupEnv("PORT"); envExists {
-		return ":" + envPort
-	}
-	return ":" + strings.TrimPrefix(port, ":")
-}
-
 // removes specified prefix from path
 func PrefixRemove(prefix string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -53,6 +44,7 @@ func PrefixRemove(prefix string) func(http.Handler) http.Handler {
 }
 
 // disallow a requests with headers specified in headers
+//
 // returns with the status code specified by code
 func BlockHeaders(headers []string, code int) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

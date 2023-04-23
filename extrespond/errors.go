@@ -1,4 +1,4 @@
-package extresp
+package extrespond
 
 import "errors"
 

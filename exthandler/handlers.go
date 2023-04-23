@@ -13,12 +13,14 @@ import (
 )
 
 // sets up a static file server at the given path with and accepts a sub dir
+//
 // will panic if can't sub
 func FileServerSub(r chi.Router, path string, fsys fs.FS, dir string) {
 	FileServer(r, path, extutil.MustSubFS(fsys, dir))
 }
 
 // sets up a static file server from an embeded fs at the given path with and accepts a sub dir
+//
 // will panic if can't sub
 func FileServerEmbeded(r chi.Router, path string, embfs embed.FS, dir string) {
 	FileServer(r, path, extutil.MustSubFS(embfs, dir))

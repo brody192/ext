@@ -2,7 +2,9 @@ package extutil
 
 import (
 	"io/fs"
+	"os"
 	"sort"
+	"strings"
 )
 
 // returns true if x is found in a
@@ -31,4 +33,14 @@ func MustSubFS(fsys fs.FS, dir string) fs.FS {
 	}
 
 	return fsub
+}
+
+// use environment variable PORT or specified port
+//
+// returned value is prefixed with `:`
+func EnvPortOr(port string) string {
+	if envPort, envExists := os.LookupEnv("PORT"); envExists {
+		return ":" + envPort
+	}
+	return ":" + strings.TrimPrefix(port, ":")
 }
