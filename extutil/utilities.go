@@ -2,28 +2,10 @@ package extutil
 
 import (
 	"io/fs"
+	"net/http"
 	"os"
-	"sort"
 	"strings"
 )
-
-// returns true if x is found in a
-func ContainsStrings(a []string, x string) bool {
-	var i = sort.SearchStrings(a, x)
-	return i < len(a) && a[i] == x
-}
-
-// returns true if x is found in a
-func ContainsInts(a []int, x int) bool {
-	var i = sort.SearchInts(a, x)
-	return i < len(a) && a[i] == x
-}
-
-// returns true if x is found in a
-func ContainsFloat64s(a []float64, x float64) bool {
-	var i = sort.SearchFloat64s(a, x)
-	return i < len(a) && a[i] == x
-}
 
 // panics if fs.sub fails
 func MustSubFS(fsys fs.FS, dir string) fs.FS {
@@ -43,4 +25,22 @@ func EnvPortOr(port string) string {
 		return ":" + envPort
 	}
 	return ":" + strings.TrimPrefix(port, ":")
+}
+
+// checks if provided method is valid as defined by the functions switch cases
+func IsValidMethod(method string) bool {
+	switch method {
+	case
+		http.MethodGet,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodConnect,
+		http.MethodDelete,
+		http.MethodHead,
+		http.MethodPatch,
+		http.MethodOptions,
+		http.MethodTrace:
+		return true
+	}
+	return false
 }

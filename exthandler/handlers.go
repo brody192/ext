@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/brody192/ext/extutil"
-	"github.com/brody192/ext/extvar"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -49,7 +48,7 @@ func FileServer(r chi.Router, path string, root fs.FS) {
 // adds matching routes to the router with methods specified in the methods slice
 func Match(r chi.Router, methods []string, pattern string, handler http.HandlerFunc) {
 	for _, method := range methods {
-		if extutil.ContainsStrings(extvar.Methods, method) == false {
+		if extutil.IsValidMethod(method) == false {
 			panic("method: " + method + " is not a valid method")
 		}
 		r.Method(method, pattern, handler)
