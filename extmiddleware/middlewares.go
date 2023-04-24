@@ -2,7 +2,11 @@ package extmiddleware
 
 import (
 	"net/http"
+	"path"
+	"path/filepath"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // sets all cors headers to accept anything
@@ -36,8 +40,18 @@ func DisallowInPath(list []string, code int) func(http.Handler) http.Handler {
 func PrefixRemove(prefix string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var rctx = chi.RouteContext(r.Context())
+
 			r.URL.Path = strings.Replace(r.URL.Path, "/"+prefix, "/", 1)
 			r.URL.Path = strings.Replace(r.URL.Path, "//", "/", 1)
+
+			if r.URL.RawPath != "" {
+				r.URL.RawPath = strings.Replace(r.URL.RawPath, "/"+prefix, "/", 1)
+				r.URL.RawPath = strings.Replace(r.URL.RawPath, "//", "/", 1)
+			}
+
+			rctx.RoutePath = r.URL.Path
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -58,4 +72,48 @@ func BlockHeaders(headers []string, code int) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// cleans path of all double slashes, uses path.Clean internally
+func CleanPath(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rctx = chi.RouteContext(r.Context())
+
+		r.URL.Path = path.Clean(r.URL.Path)
+		r.URL.Path = strings.Replace(r.URL.Path, "https:/", "https://", 1)
+
+		if r.URL.RawPath != "" {
+			r.URL.RawPath = path.Clean(r.URL.RawPath)
+			r.URL.RawPath = strings.Replace(r.URL.RawPath, "https:/", "https://", 1)
+		}
+
+		rctx.RoutePath = r.URL.Path
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+// adds a trailing slash to the request path, uses http.StatusMovedPermanently
+//
+// must come before CleanPath, or PrefixRemove
+func AddTrailingSlash(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") == false && filepath.Ext(r.URL.Path) == "" {
+			var path = r.URL.Path
+			var qs = r.URL.RawQuery
+			path += "/"
+			var uri = path
+			if qs != "" {
+				uri += "?" + qs
+			}
+
+			http.Redirect(w, r, sanitizeURI(uri), http.StatusMovedPermanently)
+
+			r.RequestURI = path
+			r.URL.Path = path
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
