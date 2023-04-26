@@ -8,28 +8,28 @@ import (
 	"strings"
 )
 
-// binary search if v is in s
+// binary search for string x in slice a
 //
-// NOTE: s must be sorted
-func ContainsString(s []string, v string) bool {
-	var i = sort.SearchStrings(s, v)
-	return i < len(s) && s[i] == v
+// NOTE: slice a must be sorted
+func ContainsString(a []string, x string) bool {
+	var i = sort.SearchStrings(a, x)
+	return i < len(a) && a[i] == x
 }
 
-// binary search if v is in s
+// binary search for int x in slice a
 //
-// NOTE: s must be sorted
-func ContainsInt(s []int, v int) bool {
-	var i = sort.SearchInts(s, v)
-	return i < len(s) && s[i] == v
+// NOTE: slice a must be sorted
+func ContainsInt(a []int, x int) bool {
+	var i = sort.SearchInts(a, x)
+	return i < len(a) && a[i] == x
 }
 
-// binary search if v is in s
+// binary search for float x in slice a
 //
-// NOTE: s must be sorted
-func ContainsFloat64(s []float64, v float64) bool {
-	var i = sort.SearchFloat64s(s, v)
-	return i < len(s) && s[i] == v
+// NOTE: slice a must be sorted
+func ContainsFloat64(a []float64, x float64) bool {
+	var i = sort.SearchFloat64s(a, x)
+	return i < len(a) && a[i] == x
 }
 
 // panics if fs.sub fails
