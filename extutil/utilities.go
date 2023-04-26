@@ -4,8 +4,17 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 )
+
+// binary search if v is in s
+//
+// NOTE: s must be sorted
+func ContainsString(s []string, v string) bool {
+	var i = sort.SearchStrings(s, v)
+	return i < len(s) && s[i] == v
+}
 
 // panics if fs.sub fails
 func MustSubFS(fsys fs.FS, dir string) fs.FS {
