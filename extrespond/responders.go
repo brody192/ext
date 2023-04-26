@@ -19,9 +19,10 @@ import (
 // sets content type to mimeType
 //
 // writes v to w
-func Blob(w http.ResponseWriter, mimeType string, v []byte) {
+func Blob(w http.ResponseWriter, mimeType string, v []byte, code int) {
 	extset.ContentLength(w, len(v))
 	w.Header().Set(extvar.HeaderContentType, mimeType)
+	w.WriteHeader(code)
 	w.Write(v)
 }
 
@@ -32,8 +33,8 @@ func Blob(w http.ResponseWriter, mimeType string, v []byte) {
 // sets content type to text plain
 //
 // writes v to w
-func PlainText(w http.ResponseWriter, v string) {
-	Blob(w, extvar.MIMETextPlainCharsetUTF8, []byte(v))
+func PlainText(w http.ResponseWriter, v string, code int) {
+	Blob(w, extvar.MIMETextPlainCharsetUTF8, []byte(v), code)
 }
 
 // accepts a byte slice
@@ -43,8 +44,8 @@ func PlainText(w http.ResponseWriter, v string) {
 // sets content type to text plain
 //
 // writes v to w
-func PlainTextBlob(w http.ResponseWriter, v []byte) {
-	Blob(w, extvar.MIMETextPlainCharsetUTF8, v)
+func PlainTextBlob(w http.ResponseWriter, v []byte, code int) {
+	Blob(w, extvar.MIMETextPlainCharsetUTF8, v, code)
 }
 
 // accepts a string
@@ -54,8 +55,8 @@ func PlainTextBlob(w http.ResponseWriter, v []byte) {
 // sets content type to text html
 //
 // writes v to w
-func HTML(w http.ResponseWriter, v string) {
-	Blob(w, extvar.MIMETextHTMLCharsetUTF8, []byte(v))
+func HTML(w http.ResponseWriter, v string, code int) {
+	Blob(w, extvar.MIMETextHTMLCharsetUTF8, []byte(v), code)
 }
 
 // accepts a byte slice
@@ -65,8 +66,8 @@ func HTML(w http.ResponseWriter, v string) {
 // sets content type to text html
 //
 // writes v to w
-func HTMLBlob(w http.ResponseWriter, v []byte) {
-	Blob(w, extvar.MIMETextHTMLCharsetUTF8, v)
+func HTMLBlob(w http.ResponseWriter, v []byte, code int) {
+	Blob(w, extvar.MIMETextHTMLCharsetUTF8, v, code)
 }
 
 // accepts a string
@@ -76,8 +77,8 @@ func HTMLBlob(w http.ResponseWriter, v []byte) {
 // sets content type to application json
 //
 // writes v to w
-func JSONString(w http.ResponseWriter, v string) {
-	Blob(w, extvar.MIMEApplicationJSONCharsetUTF8, []byte(v))
+func JSONString(w http.ResponseWriter, v string, code int) {
+	Blob(w, extvar.MIMEApplicationJSONCharsetUTF8, []byte(v), code)
 }
 
 // accepts a byte slice
@@ -87,8 +88,8 @@ func JSONString(w http.ResponseWriter, v string) {
 // sets content type to application json
 //
 // writes v to w
-func JSONBlob(w http.ResponseWriter, v []byte) {
-	Blob(w, extvar.MIMEApplicationJSONCharsetUTF8, v)
+func JSONBlob(w http.ResponseWriter, v []byte, code int) {
+	Blob(w, extvar.MIMEApplicationJSONCharsetUTF8, v, code)
 }
 
 // encodes v to a buffer
@@ -100,8 +101,8 @@ func JSONBlob(w http.ResponseWriter, v []byte) {
 // writes buffer to w
 //
 // resets buffer
-func JSON(w http.ResponseWriter, v any) {
-	jsonIndented(w, v, "")
+func JSON(w http.ResponseWriter, v any, code int) {
+	jsonIndented(w, v, "", code)
 }
 
 // encodes v to a buffer with an indent of two spaces
@@ -113,11 +114,11 @@ func JSON(w http.ResponseWriter, v any) {
 // writes buffer to w
 //
 // resets buffer
-func JSONIndented(w http.ResponseWriter, v any) {
-	jsonIndented(w, v, "  ")
+func JSONIndented(w http.ResponseWriter, v any, code int) {
+	jsonIndented(w, v, "  ", code)
 }
 
-func jsonIndented(w http.ResponseWriter, v any, indent string) {
+func jsonIndented(w http.ResponseWriter, v any, indent string, code int) {
 	var buf = &bytes.Buffer{}
 	var enc = json.NewEncoder(buf)
 	enc.SetIndent("", indent)
@@ -127,19 +128,20 @@ func jsonIndented(w http.ResponseWriter, v any, indent string) {
 		return
 	}
 
-	extset.ContentLength(w, buf.Len())
-	w.Header().Set(extvar.HeaderContentType, extvar.MIMEApplicationJSONCharsetUTF8)
-	w.Write(buf.Bytes())
+	JSONBlob(w, buf.Bytes(), code)
+
 	buf.Reset()
 }
 
 // if no content type header was previously set MIMEOctetStream will be used
 //
 // copy's re to w
-func Stream(w http.ResponseWriter, re io.Reader) error {
+func Stream(w http.ResponseWriter, re io.Reader, code int) error {
 	if ct := w.Header().Get(extvar.HeaderContentType); ct != "" {
 		w.Header().Set(extvar.HeaderContentType, extvar.MIMEOctetStream)
 	}
+
+	w.WriteHeader(code)
 
 	_, err := io.Copy(w, re)
 	return err
@@ -154,7 +156,7 @@ func Stream(w http.ResponseWriter, re io.Reader) error {
 // writes buffer to w
 //
 // resets buffer
-func Template(t *template.Template, w http.ResponseWriter, name string, data any) error {
+func Template(t *template.Template, w http.ResponseWriter, name string, data any, code int) error {
 	var templateToExecute = t.Lookup(name)
 	if templateToExecute == nil {
 		return fmt.Errorf("%w: %s", ErrTemplateNotFound, name)
@@ -166,10 +168,7 @@ func Template(t *template.Template, w http.ResponseWriter, name string, data any
 		return err
 	}
 
-	extset.ContentLength(w, buf.Len())
-	extset.HTML(w)
-
-	_, err = io.Copy(w, buf)
+	HTMLBlob(w, buf.Bytes(), code)
 
 	buf.Reset()
 

@@ -46,6 +46,8 @@ func IsValidMethod(method string) bool {
 }
 
 // return the given query parameter with all leading and trailing white space removed, as defined by Unicode.
+//
+// returns empty string if the query parameter does not exist
 func TrimmedQParam(r *http.Request, q string) string {
 	var qp = r.URL.Query().Get(q)
 
