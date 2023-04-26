@@ -24,6 +24,14 @@ func ContainsInt(s []int, v int) bool {
 	return i < len(s) && s[i] == v
 }
 
+// binary search if v is in s
+//
+// NOTE: s must be sorted
+func ContainsFloat64(s []float64, v float64) bool {
+	var i = sort.SearchFloat64s(s, v)
+	return i < len(s) && s[i] == v
+}
+
 // panics if fs.sub fails
 func MustSubFS(fsys fs.FS, dir string) fs.FS {
 	fsub, err := fs.Sub(fsys, dir)
