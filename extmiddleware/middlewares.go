@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
+	"github.com/brody192/ext/extutil"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -116,4 +118,32 @@ func AddTrailingSlash(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// auto reply to paths listed in the paths slice with given code
+//
+// given paths are pre-compiled to be clean, incoming paths are cleaned and checked against the cleaned paths with a binary contains function
+func AutoReply(paths []string, code int) func(http.Handler) http.Handler {
+	var cleanPaths = make([]string, len(paths))
+
+	for _, p := range paths {
+		var cleanPath = path.Clean(p)
+
+		cleanPaths = append(cleanPaths, cleanPath)
+	}
+
+	sort.Strings(cleanPaths)
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var urlPath = path.Clean(r.URL.Path)
+
+			if extutil.ContainsString(cleanPaths, urlPath) {
+				w.WriteHeader(code)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
