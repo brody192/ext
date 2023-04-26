@@ -16,6 +16,14 @@ func ContainsString(s []string, v string) bool {
 	return i < len(s) && s[i] == v
 }
 
+// binary search if v is in s
+//
+// NOTE: s must be sorted
+func ContainsInt(s []int, v int) bool {
+	var i = sort.SearchInts(s, v)
+	return i < len(s) && s[i] == v
+}
+
 // panics if fs.sub fails
 func MustSubFS(fsys fs.FS, dir string) fs.FS {
 	fsub, err := fs.Sub(fsys, dir)
