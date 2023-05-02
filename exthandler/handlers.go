@@ -54,3 +54,8 @@ func Match(r chi.Router, methods []string, pattern string, handler http.HandlerF
 		r.Method(method, pattern, handler)
 	}
 }
+
+// a MethodNotAllowed handler that returns http.StatusMethodNotAllowed body text and status code
+func MethodNotAllowedStatusText(w http.ResponseWriter, _ *http.Request) {
+	http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+}
