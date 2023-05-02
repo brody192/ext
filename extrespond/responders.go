@@ -156,7 +156,7 @@ func Stream(w http.ResponseWriter, re io.Reader, code int) error {
 // writes buffer to w
 //
 // resets buffer
-func Template(t *template.Template, w http.ResponseWriter, name string, data any, code int) error {
+func Template(w http.ResponseWriter, t *template.Template, name string, data any, code int) error {
 	var templateToExecute = t.Lookup(name)
 	if templateToExecute == nil {
 		return fmt.Errorf("%w: %s", ErrTemplateNotFound, name)
