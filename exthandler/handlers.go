@@ -14,19 +14,19 @@ import (
 // sets up a static file server at the given path with and accepts a sub dir
 //
 // will panic if can't sub
-func FileServerSub(r chi.Router, path string, fsys fs.FS, dir string) {
-	FileServer(r, path, extutil.MustSubFS(fsys, dir))
+func FileServerSub(r chi.Router, path string, fsys fs.FS, dir string, browse bool) {
+	FileServer(r, path, extutil.MustSubFS(fsys, dir), browse)
 }
 
 // sets up a static file server from an embeded fs at the given path with and accepts a sub dir
 //
 // will panic if can't sub
-func FileServerEmbeded(r chi.Router, path string, embfs embed.FS, dir string) {
-	FileServer(r, path, extutil.MustSubFS(embfs, dir))
+func FileServerEmbeded(r chi.Router, path string, embfs embed.FS, dir string, browse bool) {
+	FileServer(r, path, extutil.MustSubFS(embfs, dir), browse)
 }
 
 // sets up a static file server at the given path
-func FileServer(r chi.Router, path string, root fs.FS) {
+func FileServer(r chi.Router, path string, root fs.FS, browse bool) {
 	if strings.ContainsAny(path, "{}*") {
 		panic("FileServer does not permit any URL parameters")
 	}
@@ -35,12 +35,18 @@ func FileServer(r chi.Router, path string, root fs.FS) {
 		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
 		path += "/"
 	}
-	path += "*"
+
+	if strings.HasSuffix(path, "*") == false {
+		path += "*"
+	}
 
 	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
-		rctx := chi.RouteContext(r.Context())
+		var rctx = chi.RouteContext(r.Context())
 		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
-		fs := http.StripPrefix(pathPrefix, http.FileServer(http.FS(root)))
+		var fs = http.StripPrefix(pathPrefix, http.FileServer(extutil.FileSystem{Fs: http.FS(root)}))
+		if browse {
+			fs = http.StripPrefix(pathPrefix, http.FileServer(http.FS(root)))
+		}
 		fs.ServeHTTP(w, r)
 	})
 }
