@@ -65,3 +65,23 @@ func Match(r chi.Router, methods []string, pattern string, handler http.HandlerF
 func MethodNotAllowedStatusText(w http.ResponseWriter, _ *http.Request) {
 	http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 }
+
+// registers additional methods with a trailing slash that don't already have a trailing slash
+func RegisterTrailing(r *chi.Mux) {
+	var flatRoutes = make(map[string]bool, len(r.Routes()))
+
+	for _, route := range r.Routes() {
+		flatRoutes[route.Pattern] = true
+	}
+
+	for _, route := range r.Routes() {
+		if flatRoutes[route.Pattern+"/"] || flatRoutes[route.Pattern+"/*"] ||
+			strings.HasSuffix(route.Pattern, "/") || strings.HasSuffix(route.Pattern, "/*") {
+			continue
+		}
+
+		for method, handler := range route.Handlers {
+			r.Method(method, route.Pattern+"/", handler)
+		}
+	}
+}
