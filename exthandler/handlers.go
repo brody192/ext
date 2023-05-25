@@ -4,6 +4,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/brody192/ext/extutil"
@@ -68,20 +69,35 @@ func MethodNotAllowedStatusText(w http.ResponseWriter, _ *http.Request) {
 
 // registers additional methods with a trailing slash that don't already have a trailing slash
 func RegisterTrailing(r *chi.Mux) {
-	var flatRoutes = make(map[string]bool, len(r.Routes()))
+	if len(r.Routes()) == 0 {
+		panic("no routes registered on mux")
+	}
 
-	for _, route := range r.Routes() {
+	registerTrailingWithPrefix(r, r.Routes(), "")
+}
+
+func registerTrailingWithPrefix(r *chi.Mux, routes []chi.Route, prefix string) {
+	var flatRoutes = make(map[string]bool, len(routes))
+
+	for _, route := range routes {
 		flatRoutes[route.Pattern] = true
 	}
 
-	for _, route := range r.Routes() {
+	for _, route := range routes {
+		if route.SubRoutes != nil {
+			var cleanPrefix = strings.TrimRight(route.Pattern, "*")
+			var newPrefix = path.Join(prefix, cleanPrefix)
+			registerTrailingWithPrefix(r, route.SubRoutes.Routes(), newPrefix)
+		}
+
 		if flatRoutes[route.Pattern+"/"] || flatRoutes[route.Pattern+"/*"] ||
 			strings.HasSuffix(route.Pattern, "/") || strings.HasSuffix(route.Pattern, "/*") {
 			continue
 		}
 
 		for method, handler := range route.Handlers {
-			r.Method(method, route.Pattern+"/", handler)
+			var path = path.Join(prefix, route.Pattern)
+			r.Method(method, path+"/", handler)
 		}
 	}
 }
