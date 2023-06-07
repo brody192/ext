@@ -53,12 +53,37 @@ func FileServer(r chi.Router, path string, root fs.FS, browse bool) {
 }
 
 // adds matching routes to the router with methods specified in the methods slice
-func Match(r chi.Router, methods []string, pattern string, handler http.HandlerFunc) {
+func MatchMethods(r chi.Router, methods []string, pattern string, handler http.HandlerFunc) {
 	for _, method := range methods {
 		if extutil.IsValidMethod(method) == false {
 			panic("method: " + method + " is not a valid method")
 		}
+
 		r.Method(method, pattern, handler)
+	}
+}
+
+// adds matching routes to the router with patterns specified in the patterns slice
+func MatchPatterns(r chi.Router, method string, patterns []string, handler http.HandlerFunc) {
+	if extutil.IsValidMethod(method) == false {
+		panic("method: " + method + " is not a valid method")
+	}
+
+	for _, pattern := range patterns {
+		r.Method(method, pattern, handler)
+	}
+}
+
+// adds matching routes and methods to the router with methods specified in the methods and patterns slice
+func MatchMethodsPatterns(r chi.Router, methods []string, patterns []string, handler http.HandlerFunc) {
+	for _, pattern := range patterns {
+		for _, method := range methods {
+			if extutil.IsValidMethod(method) == false {
+				panic("method: " + method + " is not a valid method")
+			}
+
+			r.Method(method, pattern, handler)
+		}
 	}
 }
 
