@@ -23,6 +23,7 @@ const (
 	MIMETextPlainCharsetUTF8             = MIMETextPlain + "; " + charsetUTF8
 	MIMEMultipartForm                    = "multipart/form-data"
 	MIMEOctetStream                      = "application/octet-stream"
+	MIMETextEventStream                  = "text/event-stream"
 )
 
 // Headers
@@ -33,6 +34,7 @@ const (
 	HeaderWWWAuthenticate                 = "WWW-Authenticate"
 	HeaderAge                             = "Age"
 	HeaderCacheControl                    = "Cache-Control"
+	HeaderNoCache                         = "No-Cache"
 	HeaderClearSiteData                   = "Clear-Site-Data"
 	HeaderExpires                         = "Expires"
 	HeaderPragma                          = "Pragma"
