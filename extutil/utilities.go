@@ -6,6 +6,8 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // binary search for string x in slice a
@@ -73,7 +75,7 @@ func IsValidMethod(method string) bool {
 // return the given query parameter with all leading and trailing white space removed, as defined by Unicode.
 //
 // returns empty string if the query parameter does not exist
-func TrimmedQParam(r *http.Request, q string) string {
+func TrimmedQueryParam(r *http.Request, q string) string {
 	var qp = r.URL.Query().Get(q)
 
 	if qp != "" {
@@ -81,4 +83,17 @@ func TrimmedQParam(r *http.Request, q string) string {
 	}
 
 	return qp
+}
+
+// return the given path parameter with all leading and trailing white space removed, as defined by Unicode.
+//
+// returns empty string if the path parameter does not exist
+func TrimmedPathParam(r *http.Request, p string) string {
+	var pp = chi.URLParam(r, p)
+
+	if pp != "" {
+		return strings.TrimSpace(pp)
+	}
+
+	return pp
 }
