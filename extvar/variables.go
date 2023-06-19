@@ -24,6 +24,7 @@ const (
 	MIMEMultipartForm                    = "multipart/form-data"
 	MIMEOctetStream                      = "application/octet-stream"
 	MIMETextEventStream                  = "text/event-stream"
+	MIMETextEventStreamCharsetUTF8       = "text/event-stream" + "; " + charsetUTF8
 )
 
 // Headers
