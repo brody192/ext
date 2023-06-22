@@ -7,14 +7,16 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/brody192/ext/extvar"
 	"github.com/go-chi/chi/v5"
 )
 
 // sets all cors headers to accept anything
 func CorsAny(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods",
+		w.Header().Set(extvar.HeaderAccessControlAllowCredentials, extvar.HeaderTrue)
+		w.Header().Set(extvar.HeaderAccessControlAllowOrigin, "*")
+		w.Header().Set(extvar.HeaderAccessControlAllowMethods,
 			fmt.Sprintf(
 				"%s, %s, %s, %s, %s, %s, %s, %s, %s",
 				http.MethodGet,
@@ -27,7 +29,7 @@ func CorsAny(next http.Handler) http.Handler {
 				http.MethodOptions,
 				http.MethodTrace,
 			))
-		w.Header().Set("Access-Control-Allow-Headers", "*")
+		w.Header().Set(extvar.HeaderAccessControlAllowHeaders, extvar.HeaderWildcard)
 		next.ServeHTTP(w, r)
 	})
 }

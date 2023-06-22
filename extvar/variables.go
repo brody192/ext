@@ -29,6 +29,10 @@ const (
 
 // Headers
 const (
+	HeaderWildcard                        = "*"
+	HeaderTrue                            = "true"
+	HeaderP3P                             = "P3p"
+	HeaderFeaturePolicy                   = "Feature-Policy"
 	HeaderAuthorization                   = "Authorization"
 	HeaderProxyAuthenticate               = "Proxy-Authenticate"
 	HeaderProxyAuthorization              = "Proxy-Authorization"
