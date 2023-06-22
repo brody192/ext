@@ -1,6 +1,7 @@
 package extmiddleware
 
 import (
+	"fmt"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -13,7 +14,19 @@ import (
 func CorsAny(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, PATCH, DELETE")
+		w.Header().Set("Access-Control-Allow-Methods",
+			fmt.Sprintf(
+				"%s, %s, %s, %s, %s, %s, %s, %s, %s",
+				http.MethodGet,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodConnect,
+				http.MethodDelete,
+				http.MethodHead,
+				http.MethodPatch,
+				http.MethodOptions,
+				http.MethodTrace,
+			))
 		w.Header().Set("Access-Control-Allow-Headers", "*")
 		next.ServeHTTP(w, r)
 	})
