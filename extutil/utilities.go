@@ -4,35 +4,10 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
-
-// binary search for string x in slice a
-//
-// NOTE: slice a must be sorted
-func ContainsString(a []string, x string) bool {
-	var i = sort.SearchStrings(a, x)
-	return i < len(a) && a[i] == x
-}
-
-// binary search for int x in slice a
-//
-// NOTE: slice a must be sorted
-func ContainsInt(a []int, x int) bool {
-	var i = sort.SearchInts(a, x)
-	return i < len(a) && a[i] == x
-}
-
-// binary search for float x in slice a
-//
-// NOTE: slice a must be sorted
-func ContainsFloat64(a []float64, x float64) bool {
-	var i = sort.SearchFloat64s(a, x)
-	return i < len(a) && a[i] == x
-}
 
 // panics if fs.sub fails
 func MustSubFS(fsys fs.FS, dir string) fs.FS {
