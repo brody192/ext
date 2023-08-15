@@ -1,35 +1,55 @@
 package extutil
 
 import (
+	"io"
 	"net/http"
-	"strings"
+	"os"
 )
 
-// https://gist.github.com/hauxe/f88a87f4037bca23f04f6d100f6e08d4#file-http_static_custom_http_server-go
+// https://stackoverflow.com/a/49592238/13155318
 
-// FileSystem custom file system handler
-type FileSystem struct {
-	Fs http.FileSystem
+type JustFilesFilesystem struct {
+	FS http.FileSystem
+	// readDirBatchSize - configuration parameter for `Readdir` func
+	ReadDirBatchSize int
 }
 
-// Open opens file
-func (fs FileSystem) Open(path string) (http.File, error) {
-	f, err := fs.Open(path)
+func (fs JustFilesFilesystem) Open(name string) (http.File, error) {
+	f, err := fs.FS.Open(name)
 	if err != nil {
 		return nil, err
 	}
+	return neuteredStatFile{File: f, readDirBatchSize: fs.ReadDirBatchSize}, nil
+}
 
-	s, err := f.Stat()
+type neuteredStatFile struct {
+	http.File
+	readDirBatchSize int
+}
+
+func (e neuteredStatFile) Stat() (os.FileInfo, error) {
+	s, err := e.File.Stat()
 	if err != nil {
 		return nil, err
 	}
-
 	if s.IsDir() {
-		index := strings.TrimSuffix(path, "/") + "/index.html"
-		if _, err := fs.Open(index); err != nil {
-			return nil, err
+	LOOP:
+		for {
+			fl, err := e.File.Readdir(e.readDirBatchSize)
+			switch err {
+			case io.EOF:
+				break LOOP
+			case nil:
+				for _, f := range fl {
+					if f.Name() == "index.html" {
+						return s, err
+					}
+				}
+			default:
+				return nil, err
+			}
 		}
+		return nil, os.ErrNotExist
 	}
-
-	return f, nil
+	return s, err
 }

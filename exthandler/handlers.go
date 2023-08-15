@@ -33,18 +33,18 @@ func FileServer(r chi.Router, path string, root fs.FS, browse bool) {
 	}
 
 	if path != "/" && path[len(path)-1] != '/' {
-		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
+		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
 		path += "/"
 	}
 
-	if strings.HasSuffix(path, "*") == false {
+	if !strings.HasSuffix(path, "*") {
 		path += "*"
 	}
 
 	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
 		var rctx = chi.RouteContext(r.Context())
 		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
-		var fs = http.StripPrefix(pathPrefix, http.FileServer(extutil.FileSystem{Fs: http.FS(root)}))
+		var fs = http.StripPrefix(pathPrefix, http.FileServer(extutil.JustFilesFilesystem{FS: http.FS(root), ReadDirBatchSize: 2}))
 		if browse {
 			fs = http.StripPrefix(pathPrefix, http.FileServer(http.FS(root)))
 		}
@@ -55,7 +55,7 @@ func FileServer(r chi.Router, path string, root fs.FS, browse bool) {
 // adds matching routes to the router with methods specified in the methods slice
 func MatchMethods(r chi.Router, methods []string, pattern string, handler http.HandlerFunc) {
 	for _, method := range methods {
-		if extutil.IsValidMethod(method) == false {
+		if !extutil.IsValidMethod(method) {
 			panic("method: " + method + " is not a valid method")
 		}
 
@@ -65,7 +65,7 @@ func MatchMethods(r chi.Router, methods []string, pattern string, handler http.H
 
 // adds matching routes to the router with patterns specified in the patterns slice
 func MatchPatterns(r chi.Router, method string, patterns []string, handler http.HandlerFunc) {
-	if extutil.IsValidMethod(method) == false {
+	if !extutil.IsValidMethod(method) {
 		panic("method: " + method + " is not a valid method")
 	}
 
@@ -78,7 +78,7 @@ func MatchPatterns(r chi.Router, method string, patterns []string, handler http.
 func MatchMethodsPatterns(r chi.Router, methods []string, patterns []string, handler http.HandlerFunc) {
 	for _, pattern := range patterns {
 		for _, method := range methods {
-			if extutil.IsValidMethod(method) == false {
+			if !extutil.IsValidMethod(method) {
 				panic("method: " + method + " is not a valid method")
 			}
 
