@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"log/slog"
+
 	"github.com/go-chi/chi/v5/middleware"
-	"golang.org/x/exp/slog"
 )
 
 // logger middleware for access logs
