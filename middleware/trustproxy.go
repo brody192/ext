@@ -1,4 +1,4 @@
-package trustproxy
+package middleware
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 // PrivateRangesCIDR returns a list of private CIDR range
-// strings, which can be used as a configuration shortcut.
+// strings, which can be used as a TrustProxyConfiguration shortcut.
 //
 // 192.168.0.0/16, 172.16.0.0/12, 10.0.0.0/8, 127.0.0.1/8, fd00::/8, ::1
 var PrivateRanges = []string{
@@ -41,7 +41,7 @@ var xForwardedHosts = []string{
 	"X-Forwarded-Host",
 }
 
-type Config struct {
+type TrustProxyConfig struct {
 	TrustIPRanges       []string
 	TrustIPHeaders      []string
 	TrustSchemeHeaders  []string
@@ -49,9 +49,9 @@ type Config struct {
 	ErrorLogger         *slog.Logger
 }
 
-func (c *Config) loadDefaults() {
+func (c *TrustProxyConfig) loadDefaults() {
 	if len(c.TrustIPRanges) == 0 {
-		c.TrustIPRanges = ProxyIPHeaders
+		c.TrustIPRanges = PrivateRanges
 	}
 
 	if len(c.TrustIPHeaders) == 0 {
@@ -74,7 +74,7 @@ func (c *Config) loadDefaults() {
 // TrustProxy checks if the request IP matches one of the provided ranges/IPs
 // then inspects common reverse proxy headers and sets the corresponding
 // fields in the HTTP request struct for use by middleware or handlers that are next
-func TrustProxy(c *Config) func(http.Handler) http.Handler {
+func TrustProxy(c *TrustProxyConfig) func(http.Handler) http.Handler {
 	c.loadDefaults()
 
 	// parse passed in trusted IPs into a 'netip.Prefix' slice
@@ -169,7 +169,7 @@ func isTrustedIP(remoteAddr string, trustedIPs []netip.Prefix) (bool, error) {
 }
 
 // get the real IP from the proxy headers if present
-func (c *Config) getRealIP(headers http.Header) string {
+func (c *TrustProxyConfig) getRealIP(headers http.Header) string {
 	for _, proxyHeader := range c.TrustIPHeaders {
 		if value := headers.Get(proxyHeader); value != "" {
 			return strings.SplitN(value, ",", 2)[0]
@@ -179,7 +179,7 @@ func (c *Config) getRealIP(headers http.Header) string {
 	return ""
 }
 
-func (c *Config) getRealHost(headers http.Header) string {
+func (c *TrustProxyConfig) getRealHost(headers http.Header) string {
 	for _, hostHeader := range c.TrustForwardedHosts {
 		if value := headers.Get(hostHeader); value != "" {
 			return value
@@ -190,7 +190,7 @@ func (c *Config) getRealHost(headers http.Header) string {
 }
 
 // get the scheme from the proxy headers if present
-func (c *Config) getScheme(headers http.Header) string {
+func (c *TrustProxyConfig) getScheme(headers http.Header) string {
 	for _, schemaHeader := range c.TrustSchemeHeaders {
 		if value := headers.Get(schemaHeader); value != "" {
 			return strings.ToLower(value)

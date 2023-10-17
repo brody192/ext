@@ -1,4 +1,4 @@
-package extmiddleware
+package middleware
 
 import (
 	"net/http"

@@ -1,4 +1,4 @@
-package extmiddleware
+package middleware
 
 // adapted from https://github.com/labstack/echo/blob/c0c00e6241a5950075e5c5f12b2e66a42cf0348b/middleware/body_limit.go for use with net/http
 
