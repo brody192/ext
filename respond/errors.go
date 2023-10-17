@@ -1,4 +1,4 @@
-package extrespond
+package respond
 
 import "errors"
 

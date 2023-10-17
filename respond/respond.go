@@ -1,4 +1,4 @@
-package extrespond
+package respond
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/brody192/ext/extset"
 	"github.com/brody192/ext/extvar"
+	"github.com/brody192/ext/set"
 )
 
 // accepts a byte slice
@@ -20,7 +20,7 @@ import (
 //
 // writes v to w
 func Blob(w http.ResponseWriter, mimeType string, v []byte, code int) {
-	extset.ContentLength(w, len(v))
+	set.ContentLength(w, len(v))
 	w.Header().Set(extvar.HeaderContentType, mimeType)
 	w.WriteHeader(code)
 	w.Write(v)

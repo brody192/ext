@@ -1,4 +1,4 @@
-package extvar
+package variables
 
 import "net/http"
 

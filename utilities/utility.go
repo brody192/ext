@@ -1,4 +1,4 @@
-package extutil
+package utilities
 
 import (
 	"io/fs"

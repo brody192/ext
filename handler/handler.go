@@ -1,4 +1,4 @@
-package exthandler
+package handler
 
 import (
 	"embed"
@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/brody192/ext/extutil"
+	"github.com/brody192/ext/utilities"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -16,14 +16,14 @@ import (
 //
 // will panic if can't sub
 func FileServerSub(r chi.Router, path string, fsys fs.FS, dir string, browse bool) {
-	FileServer(r, path, extutil.MustSubFS(fsys, dir), browse)
+	FileServer(r, path, utilities.MustSubFS(fsys, dir), browse)
 }
 
 // sets up a static file server from an embeded fs at the given path with and accepts a sub dir
 //
 // will panic if can't sub
 func FileServerEmbeded(r chi.Router, path string, embfs embed.FS, dir string, browse bool) {
-	FileServer(r, path, extutil.MustSubFS(embfs, dir), browse)
+	FileServer(r, path, utilities.MustSubFS(embfs, dir), browse)
 }
 
 // sets up a static file server at the given path
@@ -44,7 +44,7 @@ func FileServer(r chi.Router, path string, root fs.FS, browse bool) {
 	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
 		var rctx = chi.RouteContext(r.Context())
 		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
-		var fs = http.StripPrefix(pathPrefix, http.FileServer(extutil.JustFilesFilesystem{FS: http.FS(root), ReadDirBatchSize: 2}))
+		var fs = http.StripPrefix(pathPrefix, http.FileServer(utilities.JustFilesFilesystem{FS: http.FS(root), ReadDirBatchSize: 2}))
 		if browse {
 			fs = http.StripPrefix(pathPrefix, http.FileServer(http.FS(root)))
 		}
@@ -55,7 +55,7 @@ func FileServer(r chi.Router, path string, root fs.FS, browse bool) {
 // adds matching routes to the router with methods specified in the methods slice
 func MatchMethods(r chi.Router, methods []string, pattern string, handler http.HandlerFunc) {
 	for _, method := range methods {
-		if !extutil.IsValidMethod(method) {
+		if !utilities.IsValidMethod(method) {
 			panic("method: " + method + " is not a valid method")
 		}
 
@@ -65,7 +65,7 @@ func MatchMethods(r chi.Router, methods []string, pattern string, handler http.H
 
 // adds matching routes to the router with patterns specified in the patterns slice
 func MatchPatterns(r chi.Router, method string, patterns []string, handler http.HandlerFunc) {
-	if !extutil.IsValidMethod(method) {
+	if !utilities.IsValidMethod(method) {
 		panic("method: " + method + " is not a valid method")
 	}
 
@@ -78,7 +78,7 @@ func MatchPatterns(r chi.Router, method string, patterns []string, handler http.
 func MatchMethodsPatterns(r chi.Router, methods []string, patterns []string, handler http.HandlerFunc) {
 	for _, pattern := range patterns {
 		for _, method := range methods {
-			if !extutil.IsValidMethod(method) {
+			if !utilities.IsValidMethod(method) {
 				panic("method: " + method + " is not a valid method")
 			}
 

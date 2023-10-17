@@ -1,4 +1,4 @@
-package extset
+package set
 
 import (
 	"net/http"
