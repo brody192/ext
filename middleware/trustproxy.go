@@ -171,11 +171,9 @@ func isTrustedIP(remoteAddr string, trustedIPs []netip.Prefix) (bool, error) {
 // get the real IP from the proxy headers if present
 func (c *TrustProxyConfig) getRealIP(headers http.Header) string {
 	for _, proxyHeader := range c.TrustIPHeaders {
-		values := headers.Values(proxyHeader)
-		valuesLen := len(values)
-
-		if valuesLen > 0 {
-			return values[valuesLen-1]
+		if value := headers.Get(proxyHeader); value != "" {
+			ips := strings.Split(value, ",")
+			return strings.TrimSpace(ips[len(ips)-1])
 		}
 	}
 
